@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // ✅ Add navigation hook
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import { useMutation } from '@tanstack/react-query';
@@ -16,9 +17,19 @@ type Props = {
 
 export default function ChatArea({ selectedChat }: Props) {
   const [chatMap, setChatMap] = useState<Record<string, Message[]>>({});
-  const [inputDisabled, setInputDisabled] = useState(false); // ✅ disable control
+  const [inputDisabled, setInputDisabled] = useState(false);
   const token = getToken();
   const bottomRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate(); // ✅
+
+  const handleAuthError = (err: any) => {
+    if (err?.message === "No token found!" || err?.response?.data?.detail === "Invalid token") {
+      console.warn("⚠️ Token missing or invalid, redirecting to login...");
+      navigate('/login'); // ✅ Redirect
+      return true;
+    }
+    return false;
+  };
 
   const { mutate: sendMessage } = useMutation({
     mutationFn: async ({ message }: { message: string }) => {
@@ -27,7 +38,7 @@ export default function ChatArea({ selectedChat }: Props) {
       return res;
     },
     onSuccess: (data, variables) => {
-      setInputDisabled(false); // ✅ enable input after success
+      setInputDisabled(false);
       if (!selectedChat) return;
       setChatMap((prev) => {
         const prevMessages = prev[selectedChat] || [];
@@ -47,8 +58,10 @@ export default function ChatArea({ selectedChat }: Props) {
       });
     },
     onError: (err: any) => {
-      console.error("❌ Message error:", err.message);
-      setInputDisabled(false); // ✅ enable input again on failure
+      console.error("❌ Message error:", err);
+      setInputDisabled(false);
+      if (handleAuthError(err)) return; // ✅ Handle auth errors
+
       if (!selectedChat) return;
       setChatMap((prev) => {
         const prevMessages = prev[selectedChat] || [];
@@ -89,7 +102,7 @@ export default function ChatArea({ selectedChat }: Props) {
       }
     },
     onSuccess: (data, variables) => {
-      setInputDisabled(false); // ✅ enable input after success
+      setInputDisabled(false);
       if (!selectedChat) return;
       setChatMap((prev) => {
         const prevMessages = prev[selectedChat] || [];
@@ -103,8 +116,10 @@ export default function ChatArea({ selectedChat }: Props) {
       });
     },
     onError: (err: any) => {
-      console.error("❌ File operation error:", err.message);
-      setInputDisabled(false); // ✅ enable input again on failure
+      console.error("❌ File operation error:", err);
+      setInputDisabled(false);
+      if (handleAuthError(err)) return; // ✅ Handle auth errors
+
       if (!selectedChat) return;
       setChatMap((prev) => {
         const prevMessages = prev[selectedChat] || [];
@@ -125,7 +140,7 @@ export default function ChatArea({ selectedChat }: Props) {
       return;
     }
 
-    setInputDisabled(true); // ✅ disable input when sending
+    setInputDisabled(true);
 
     if (file) {
       setChatMap((prev) => ({

@@ -4,7 +4,7 @@ class Settings(BaseSettings):
     MONGO_URI: str
     SECRET_KEY: str = "super-secret-key"
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 360
 
     class Config:
         env_file = ".env"

@@ -1,0 +1,22 @@
+
+
+yt-dlp --list-formats 
+yt-dlp --cookies C:\ff\cookies.txt --list-formats 
+
+	(854x480@30 FPS)
+mpv --ytdl-format=135+251 
+
+	(1280x720@30 FPS)
+mpv --ytdl-format=136+251 
+
+yt-dlp --cookies C:\ff\cookies.txt --format=134+251 -o - "https" | mpv -
+mpv "https" --external-file="https"
+
+[Download]:
+yt-dlp --format=136+251 
+yt-dlp --format=136+251 --download-section "*00:00:00-00:00:10" 
+yt-dlp --cookies C:\ff\cookies.txt --format=134+251 "https"
+
+-------------------------------------------------------------------
+
+IMDb: 

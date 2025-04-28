@@ -3,7 +3,7 @@ import { FiSend, FiPlus, FiX } from 'react-icons/fi';
 
 type Props = {
   onSend: (message: string, file?: File | null) => void;
-  disabled?: boolean; // ✅ Accept disabled prop
+  disabled?: boolean;
 };
 
 export default function ChatInput({ onSend, disabled }: Props) {
@@ -15,14 +15,19 @@ export default function ChatInput({ onSend, disabled }: Props) {
     e.preventDefault();
     if (!input.trim() && !file) return;
 
-    onSend(input.trim(), file); 
+    onSend(input.trim(), file);
 
     setInput('');
     setFile(null);
+
+    // ✅ Clear file input after submit
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleFileClick = () => {
-    if (disabled) return; // ⬅️ prevent click when disabled
+    if (disabled) return;
     fileInputRef.current?.click();
   };
 
@@ -30,6 +35,11 @@ export default function ChatInput({ onSend, disabled }: Props) {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       setFile(selectedFile);
+
+      // ✅ Immediately reset file input value so that even same file triggers again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -74,7 +84,7 @@ export default function ChatInput({ onSend, disabled }: Props) {
         <input
           type="text"
           placeholder="Ask anything"
-          disabled={disabled} // ✅ disable input if sending
+          disabled={disabled}
           className="flex-1 bg-transparent text-white px-4 focus:outline-none"
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -83,7 +93,7 @@ export default function ChatInput({ onSend, disabled }: Props) {
         <button
           type="submit"
           className="text-gray-400 hover:text-white"
-          disabled={disabled} // ✅ disable send button if sending
+          disabled={disabled}
         >
           <FiSend size={20} />
         </button>
