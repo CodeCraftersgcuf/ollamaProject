@@ -54,6 +54,7 @@ async def chat(req: ChatRequest, user: str = Depends(get_current_user)):
         })
 
     return StreamingResponse(generate(), media_type="text/plain")
+
 @router.get("/history")
 def get_chat_history(user: str = Depends(get_current_user), limit: int = Query(10)):
     history = db.chats.find({"user": user}).sort("timestamp", -1).limit(limit)

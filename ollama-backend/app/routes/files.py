@@ -7,31 +7,62 @@ import shutil
 from uuid import uuid4
 import pandas as pd
 import httpx
+from pdfminer.high_level import extract_text as extract_pdf_text
+from docx import Document
 
 router = APIRouter()
 
 UPLOAD_DIR = "uploaded_files"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+
+
+
+
+
 def extract_text_from_file(file_path: str) -> str:
-    ext = os.path.splitext(file_path)[-1].lower()
+    _, ext = os.path.splitext(file_path)
+    ext = ext.lower()
 
     if ext == ".txt":
         with open(file_path, "r", encoding="utf-8") as f:
             return f.read()
 
-    elif ext == ".xlsx":
-        df = pd.read_excel(file_path, engine="openpyxl")
-        return df.to_string(index=False)
+    elif ext == ".docx":
+        try:
+            doc = Document(file_path)
+            return "\n".join([p.text for p in doc.paragraphs])
+        except Exception as e:
+            raise ValueError("Failed to read DOCX file: " + str(e))
 
     elif ext == ".pdf":
-        doc = fitz.open(file_path)
-        return "\n".join([page.get_text() for page in doc])
+        try:
+            # Try reading PDF via PyMuPDF (better for scanned PDFs)
+            doc = fitz.open(file_path)
+            return "\n".join([page.get_text() for page in doc])
+        except Exception:
+            # Fallback to pdfminer if needed
+            try:
+                return extract_pdf_text(file_path)
+            except Exception as e:
+                raise ValueError("Failed to read PDF file: " + str(e))
+
+    elif ext == ".xlsx":
+        try:
+            df = pd.read_excel(file_path, engine="openpyxl")
+            return df.to_string(index=False)
+        except Exception as e:
+            raise ValueError("Failed to read Excel file: " + str(e))
 
     elif ext in [".png", ".jpg", ".jpeg"]:
-        return pytesseract.image_to_string(Image.open(file_path))
+        try:
+            return pytesseract.image_to_string(Image.open(file_path))
+        except Exception as e:
+            raise ValueError("Failed OCR image reading: " + str(e))
 
-    raise ValueError(f"Unsupported file type: {ext}")
+    else:
+        raise ValueError(f"Unsupported file type: {ext}")
+
 
 @router.post("/upload")
 async def upload_file(
@@ -164,3 +195,48 @@ def get_summary_history(
         }
         for r in records
     ]
+@router.post("/translate")
+async def translate_file(
+    filename: str = Form(...),
+    user: str = Depends(get_current_user)
+):
+    # 1. Find file metadata
+    file_doc = db.files.find_one({"user": user, "stored_filename": filename})
+    if not file_doc:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    # 2. Extract file text
+    try:
+        content = extract_text_from_file(file_doc["file_path"])
+    except Exception:
+        raise HTTPException(status_code=500, detail="Failed to read file")
+
+    # 3. Prepare Strong Translation Prompt (Improved!)
+    prompt = (
+        "You are a professional Kurdish (Sorani) translator. "
+        "Translate the following English document into fluent, formal Kurdish language. "
+        "Do not mix English words. "
+        "Keep sentences clear, formal, and properly structured.\n\n"
+        "Here is the text:\n\n"
+        f"{content[:3000]}"  # Limit long documents to 3000 chars
+    )
+
+    # 4. Send to Ollama
+    try:
+        async with httpx.AsyncClient(timeout=120) as client:
+            response = await client.post(
+                "http://localhost:11434/api/generate",
+                json={"model": "llama3.2", "prompt": prompt, "stream": False}
+            )
+        response.raise_for_status()
+        data = response.json()
+        translation = data.get("response", "No translation received.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ollama error: {str(e)}")
+
+    # 5. Return clean
+    return {
+        "original_filename": file_doc["original_filename"],
+        "translation": translation,
+        "translated_language": "Kurdish"
+    }
