@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
+import { useMutation } from '@tanstack/react-query';
+import { sendChatMessage } from '../utils/mutation';
+import { getToken } from '../utils/getToken';
 
 type Message = {
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'pending'; // pending used internally
   content: string;
 };
 
@@ -12,23 +15,71 @@ type Props = {
 };
 
 export default function ChatArea({ selectedChat }: Props) {
-  // Stores all messages by chat name
   const [chatMap, setChatMap] = useState<Record<string, Message[]>>({});
+  const token = getToken(); // 👈 Grab token from localStorage
+
+  const { mutate: sendMessage } = useMutation({
+    mutationFn: async ({ message }: { message: string }) => {
+      console.log("📤 Sending message to API:", message);
+      if (!token) throw new Error("No token found!");
+      const res = await sendChatMessage({ message, token });
+      console.log("✅ API Response:", res);
+      return res; // res is string
+    },
+    onSuccess: (data, variables) => {
+      console.log("✅ Mutation success:", data, variables);
+
+      if (!selectedChat) return;
+
+      setChatMap((prev) => {
+        const prevMessages = prev[selectedChat] || [];
+
+        const updatedMessages = prevMessages.map((msg) => {
+          if (msg.role === 'pending') {
+            return { role: 'user', content: variables.message };
+          }
+          return msg;
+        });
+
+        // Now replace "thinking..." assistant message
+        const finalMessages = updatedMessages.map((msg) => {
+          if (msg.content === '___typing___') {
+            return { role: 'assistant', content: data };
+          }
+          return msg;
+        });
+
+        return {
+          ...prev,
+          [selectedChat]: finalMessages,
+        };
+      });
+    },
+    onError: (err: any) => {
+      console.error("❌ Mutation error:", err);
+    },
+  });
 
   const handleSend = (text: string) => {
-    if (!selectedChat) return;
+    if (!selectedChat) {
+      console.warn("⚠️ No selected chat to send message.");
+      return;
+    }
 
-    const prevMessages = chatMap[selectedChat] || [];
-    const newMessages = [
-      ...prevMessages,
-      { role: 'user', content: text },
-      { role: 'assistant', content: "Hey! I'm doing great, thanks for asking — how about you? 😊" },
-    ];
+    console.log("🛜 User sending:", text);
 
-    setChatMap({
-      ...chatMap,
-      [selectedChat]: newMessages,
-    });
+    // Optimistically show user's pending message
+    setChatMap((prev) => ({
+      ...prev,
+      [selectedChat]: [
+        ...(prev[selectedChat] || []),
+        { role: 'pending', content: text },
+        { role: 'assistant', content: '___typing___' }, // 🔥 Typing placeholder
+      ],
+    }));
+
+    // Now actually send to API
+    sendMessage({ message: text });
   };
 
   const messages = selectedChat ? chatMap[selectedChat] || [] : [];
