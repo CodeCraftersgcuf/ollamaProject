@@ -66,6 +66,20 @@ export const translateFile = async ({
 }) => {
   return await apiCall(API_ENDPOINTS.FILES.Translate, "POST", data, token);
 };
+export const detectIntent = async ({
+    message,
+    token,
+  }: {
+    message: string;
+    token: string;
+  }) => {
+    const formData = new FormData();
+    formData.append('prompt', message);
+  
+    const response = await apiCall(API_ENDPOINTS.FILES.DetectIntent, "POST", formData, token);
+    return response.intent; // 'summarize' or 'translate' or 'unknown'
+  };
+  
 
 // 🔥 Mutation: Speech-to-Text (upload audio)
 export const speechToText = async ({

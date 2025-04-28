@@ -240,3 +240,19 @@ async def translate_file(
         "translation": translation,
         "translated_language": "Kurdish"
     }
+    
+@router.post("/detect-intent")
+async def detect_intent(prompt: str = Form(...)):
+    final_prompt = (
+        "You are an assistant. Only respond with exactly one word: "
+        '"summarize", "translate", or "unknown".\n\n'
+        f"User message: {prompt}"
+    )
+    async with httpx.AsyncClient(timeout=30) as client:
+        response = await client.post(
+            "http://localhost:11434/api/generate",
+            json={"model": "llama3.2", "prompt": final_prompt, "stream": False}
+        )
+    response.raise_for_status()
+    result = response.json()
+    return {"intent": result.get("response", "").strip().lower()}

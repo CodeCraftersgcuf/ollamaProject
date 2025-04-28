@@ -18,7 +18,9 @@ const API_ENDPOINTS = {
     Process: API_DOMAIN + "/files/process", // POST
     Translate: API_DOMAIN + "/files/translate", // POST
     SummaryHistory: API_DOMAIN + "/files/summary-history", // GET
-    
+    DetectIntent: API_DOMAIN + "/files/detect-intent", // ⬅️ New for intent detection
+
+
   },
 
   AUDIO: {
