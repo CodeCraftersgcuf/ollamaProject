@@ -1,8 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import chat, auth, files, stt_tts, subject, dashboard, blog
+from app.routes import chat, auth, files, stt_tts, subject, dashboard, blog,admins
+from app.seed_admin import seed_admins  # ✅ correct import
 
 app = FastAPI()
+
+# Seed database on startup
+seed_admins()
 
 # Allow frontend (adjust port if needed)
 origins = ["http://localhost:5173"]
@@ -23,8 +27,7 @@ app.include_router(stt_tts.router, prefix="/api/audio")
 app.include_router(subject.router, prefix="/api/subject")
 app.include_router(dashboard.router, prefix="/api/dashboard")
 app.include_router(blog.router, prefix="/api/blog")
-
-
+app.include_router(admins.router, prefix="/api/admins")
 
 @app.get("/")
 def root():

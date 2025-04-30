@@ -7,36 +7,45 @@ const API_ENDPOINTS = {
     Login: API_DOMAIN + "/auth/login",
   },
 
+  ADMINS: {
+    Create: API_DOMAIN + "/admins/create",
+    List: API_DOMAIN + "/admins/list",
+    Delete: API_DOMAIN + "/admins/delete",
+    UpdatePassword: API_DOMAIN + "/admins/update-password",
+  },
+
   CHAT: {
-    StreamChat: API_DOMAIN + "/chat", // POST (stream response)
-    GetHistory: API_DOMAIN + "/files/summary-history", // GET
+    StreamChat: API_DOMAIN + "/chat",
+    GetHistory: (username?: string) =>
+      username
+        ? `${API_DOMAIN}/chat/history?username=${username}`
+        : `${API_DOMAIN}/chat/history`,
   },
 
   FILES: {
-    Upload: API_DOMAIN + "/files/upload", // POST FormData
-    List: API_DOMAIN + "/files/list",     // GET
-    Process: API_DOMAIN + "/files/process", // POST
-    Translate: API_DOMAIN + "/files/translate", // POST
-    SummaryHistory: API_DOMAIN + "/files/summary-history", // GET
-    DetectIntent: API_DOMAIN + "/files/detect-intent", // ⬅️ New for intent detection
-
-
+    Upload: API_DOMAIN + "/files/upload",
+    List: API_DOMAIN + "/files/list",
+    Process: API_DOMAIN + "/files/process",
+    Translate: API_DOMAIN + "/files/translate",
+    SummaryHistory: API_DOMAIN + "/files/summary-history", // ✅ new
+    DetectIntent: API_DOMAIN + "/files/detect-intent",
   },
 
   AUDIO: {
-    STT: API_DOMAIN + "/audio/stt", // POST FormData
-    TTS: API_DOMAIN + "/audio/tts", // POST (query param)
+    STT: API_DOMAIN + "/audio/stt",
+    TTS: API_DOMAIN + "/audio/tts",
   },
 
   SUBJECT: {
-    Create: API_DOMAIN + "/subject", // POST
-    List: API_DOMAIN + "/subject/list", // GET
-    CreateSubobject: API_DOMAIN + "/subject/subobject", // POST
-    ListSubobject: (subjectId: string) => API_DOMAIN + `/subject/subobject/list/${subjectId}`, // GET
+    Create: API_DOMAIN + "/subject",
+    List: API_DOMAIN + "/subject/list",
+    CreateSubobject: API_DOMAIN + "/subject/subobject",
+    ListSubobject: (subjectId: string) =>
+      `${API_DOMAIN}/subject/subobject/list/${subjectId}`,
   },
 
   BLOG: {
-    ScrapeAndSummarize: API_DOMAIN + "/blog/scrape", // POST
+    ScrapeAndSummarize: API_DOMAIN + "/blog/scrape",
   },
 };
 

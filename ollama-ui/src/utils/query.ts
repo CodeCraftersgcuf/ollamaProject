@@ -4,9 +4,9 @@ import { API_ENDPOINTS } from "../../apiConfig";
 import { apiCall } from "./customApiCall";
 
 // 🔥 Query: Get file list
-export const fetchChatHistory = async (token: string) => {
-  return await apiCall(API_ENDPOINTS.CHAT.GetHistory, "GET", undefined, token);
-};
+// export const fetchChatHistory = async (token: string) => {
+//   return await apiCall(API_ENDPOINTS.CHAT.GetHistory, "GET", undefined, token);
+// };
 
 export const fetchFiles = async (token: string) => {
   return await apiCall(API_ENDPOINTS.FILES.List, "GET", undefined, token);
@@ -16,14 +16,11 @@ export const getUserFiles = async (token: string) => {
 };
 
 // 🔥 Query: Get summary history
-export const getSummaryHistory = async (token: string) => {
-  return await apiCall(
-    API_ENDPOINTS.FILES.SummaryHistory,
-    "GET",
-    undefined,
-    token
-  );
+export const getChatHistory = async (token: string, username?: string) => {
+  return await apiCall(API_ENDPOINTS.CHAT.GetHistory(username), "GET", undefined, token);
 };
+export const getSummaryHistory = async (token: string) =>
+  await apiCall(API_ENDPOINTS.FILES.SummaryHistory, "GET", undefined, token);
 
 // 🔥 Query: Get subject list
 export const getSubjectList = async (token: string) => {

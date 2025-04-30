@@ -94,9 +94,13 @@ async def upload_file(
 @router.get("/list")
 def list_user_files(
     chat_id: str = None,
-    user: str = Depends(get_current_user)
+    user: dict = Depends(get_current_user)
 ):
-    query = {"user": user}
+    query = {}
+
+    if user.get("role") != "superadmin":
+        query["user"] = user["_id"]
+
     if chat_id:
         query["chat_id"] = chat_id
 
@@ -110,6 +114,7 @@ def list_user_files(
         }
         for f in files
     ]
+
 @router.post("/process")
 async def process_file(
     filename: str = Form(...),

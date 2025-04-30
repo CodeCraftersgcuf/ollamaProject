@@ -1,10 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // ✅ Add navigation hook
+import { useNavigate } from 'react-router-dom';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import { useMutation } from '@tanstack/react-query';
-import { sendChatMessage, detectIntent, uploadFile, processFile, translateFile } from '../utils/mutation';
+import {
+  sendChatMessage,
+  detectIntent,
+  uploadFile,
+  processFile,
+  translateFile
+} from '../utils/mutation';
 import { getToken } from '../utils/getToken';
+import { getChatHistory } from '../utils/query'; // ✅ import
 
 type Message = {
   role: 'user' | 'assistant' | 'pending';
@@ -13,19 +20,23 @@ type Message = {
 
 type Props = {
   selectedChat: string | null;
+  readOnly?: boolean;
 };
 
-export default function ChatArea({ selectedChat }: Props) {
+export default function ChatArea({ selectedChat, readOnly }: Props) {
   const [chatMap, setChatMap] = useState<Record<string, Message[]>>({});
   const [inputDisabled, setInputDisabled] = useState(false);
   const token = getToken();
   const bottomRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate(); // ✅
+  const navigate = useNavigate();
 
   const handleAuthError = (err: any) => {
-    if (err?.message === "No token found!" || err?.response?.data?.detail === "Invalid token") {
+    if (
+      err?.message === "No token found!" ||
+      err?.response?.data?.detail === "Invalid token"
+    ) {
       console.warn("⚠️ Token missing or invalid, redirecting to login...");
-      navigate('/login'); // ✅ Redirect
+      navigate('/login');
       return true;
     }
     return false;
@@ -34,46 +45,37 @@ export default function ChatArea({ selectedChat }: Props) {
   const { mutate: sendMessage } = useMutation({
     mutationFn: async ({ message }: { message: string }) => {
       if (!token) throw new Error("No token found!");
-      const res = await sendChatMessage({ message, token });
-      return res;
+      return await sendChatMessage({ message, token });
     },
     onSuccess: (data, variables) => {
       setInputDisabled(false);
       if (!selectedChat) return;
-      setChatMap((prev) => {
-        const prevMessages = prev[selectedChat] || [];
-        const updated = prevMessages.map((msg) => {
-          if (msg.role === 'pending') {
-            return { role: 'user', content: variables.message };
-          }
-          return msg;
-        });
-        const final = updated.map((msg) => {
-          if (msg.content === '___typing___') {
-            return { role: 'assistant', content: data };
-          }
-          return msg;
-        });
-        return { ...prev, [selectedChat]: final };
-      });
-    },
-    onError: (err: any) => {
-      console.error("❌ Message error:", err);
-      setInputDisabled(false);
-      if (handleAuthError(err)) return; // ✅ Handle auth errors
 
-      if (!selectedChat) return;
-      setChatMap((prev) => {
-        const prevMessages = prev[selectedChat] || [];
-        const updated = prevMessages.map((msg) => {
-          if (msg.content === '___typing___') {
-            return { role: 'assistant', content: "⚠️ Server error. Try again." };
-          }
-          return msg;
-        });
+      setChatMap(prev => {
+        const updated = (prev[selectedChat] || []).map(msg =>
+          msg.role === 'pending' ? { role: 'user', content: variables.message } : msg
+        ).map(msg =>
+          msg.content === '___typing___' ? { role: 'assistant', content: data } : msg
+        );
+
         return { ...prev, [selectedChat]: updated };
       });
     },
+    onError: err => {
+      console.error("❌ Message error:", err);
+      setInputDisabled(false);
+      if (handleAuthError(err)) return;
+
+      if (!selectedChat) return;
+      setChatMap(prev => {
+        const updated = (prev[selectedChat] || []).map(msg =>
+          msg.content === '___typing___'
+            ? { role: 'assistant', content: "⚠️ Server error. Try again." }
+            : msg
+        );
+        return { ...prev, [selectedChat]: updated };
+      });
+    }
   });
 
   const { mutate: detectAndUpload } = useMutation({
@@ -81,91 +83,96 @@ export default function ChatArea({ selectedChat }: Props) {
       if (!token) throw new Error("No token found!");
       const formData = new FormData();
       formData.append('file', file);
-
       const uploadResult = await uploadFile({ data: formData, token });
 
       const fileFormData = new FormData();
       fileFormData.append('filename', uploadResult.filename);
 
-      if (!message.trim()) {
-        return await processFile({ data: fileFormData, token });
-      }
+      if (!message.trim()) return await processFile({ data: fileFormData, token });
 
       const fixedPrompt = `You must classify the following sentence strictly as either "summarize" or "translate". No other output allowed.\n\nSentence:\n"${message}"`;
       const intent = await detectIntent({ message: fixedPrompt, token });
-      console.log("✅ Detected intent:", intent);
-
-      if (intent === 'translate') {
-        return await translateFile({ data: fileFormData, token });
-      } else {
-        return await processFile({ data: fileFormData, token });
-      }
+      return intent === 'translate'
+        ? await translateFile({ data: fileFormData, token })
+        : await processFile({ data: fileFormData, token });
     },
     onSuccess: (data, variables) => {
       setInputDisabled(false);
       if (!selectedChat) return;
-      setChatMap((prev) => {
-        const prevMessages = prev[selectedChat] || [];
-        const updated = prevMessages.map((msg) => {
-          if (msg.content === '___typing___') {
-            return { role: 'assistant', content: data.summary || data.translation || "✅ Completed." };
-          }
-          return msg;
-        });
+
+      setChatMap(prev => {
+        const updated = (prev[selectedChat] || []).map(msg =>
+          msg.content === '___typing___'
+            ? { role: 'assistant', content: data.summary || data.translation || "✅ Completed." }
+            : msg
+        );
         return { ...prev, [selectedChat]: updated };
       });
     },
-    onError: (err: any) => {
+    onError: err => {
       console.error("❌ File operation error:", err);
       setInputDisabled(false);
-      if (handleAuthError(err)) return; // ✅ Handle auth errors
+      if (handleAuthError(err)) return;
 
       if (!selectedChat) return;
-      setChatMap((prev) => {
-        const prevMessages = prev[selectedChat] || [];
-        const updated = prevMessages.map((msg) => {
-          if (msg.content === '___typing___') {
-            return { role: 'assistant', content: "⚠️ Server error. Try again." };
-          }
-          return msg;
-        });
+      setChatMap(prev => {
+        const updated = (prev[selectedChat] || []).map(msg =>
+          msg.content === '___typing___'
+            ? { role: 'assistant', content: "⚠️ Server error. Try again." }
+            : msg
+        );
         return { ...prev, [selectedChat]: updated };
       });
-    },
+    }
   });
 
   const handleSend = (text: string, file?: File | null) => {
-    if (!selectedChat) {
-      console.warn("⚠️ No selected chat to send message.");
-      return;
-    }
+    if (!selectedChat) return;
 
     setInputDisabled(true);
 
     if (file) {
-      setChatMap((prev) => ({
+      setChatMap(prev => ({
         ...prev,
         [selectedChat]: [
           ...(prev[selectedChat] || []),
-          { role: 'user', content: text ? text : "(Attached File)" },
-          { role: 'assistant', content: '___typing___' },
-        ],
+          { role: 'user', content: text || "(Attached File)" },
+          { role: 'assistant', content: '___typing___' }
+        ]
       }));
-
       detectAndUpload({ message: text, file });
     } else {
-      setChatMap((prev) => ({
+      setChatMap(prev => ({
         ...prev,
         [selectedChat]: [
           ...(prev[selectedChat] || []),
           { role: 'pending', content: text },
-          { role: 'assistant', content: '___typing___' },
-        ],
+          { role: 'assistant', content: '___typing___' }
+        ]
       }));
-
       sendMessage({ message: text });
     }
   };
+
+  // ✅ Fetch chat history when selectedChat changes (except 'new-chat')
+  useEffect(() => {
+    const fetchHistory = async () => {
+      if (!token || !selectedChat || selectedChat === 'new-chat') return;
+      try {
+        const result = await getChatHistory(token, selectedChat);
+        const messages: Message[] = result.map((item: any) => [
+          { role: 'user', content: item.question },
+          { role: 'assistant', content: item.answer }
+        ]).flat();
+        setChatMap(prev => ({ ...prev, [selectedChat]: messages }));
+      } catch (err) {
+        console.error("❌ Failed to fetch history:", err);
+        if (handleAuthError(err)) return;
+      }
+    };
+
+    fetchHistory();
+  }, [selectedChat]);
 
   const messages = selectedChat ? chatMap[selectedChat] || [] : [];
 
@@ -190,12 +197,13 @@ export default function ChatArea({ selectedChat }: Props) {
         )}
       </div>
 
-      {/* Input */}
-      <div className="w-full bg-[#212121] border-t border-[#444654] sticky bottom-0 z-10">
-        <div className="p-4">
-          <ChatInput onSend={handleSend} disabled={inputDisabled} />
+      {!readOnly && (
+        <div className="w-full bg-[#212121] border-t border-[#444654] sticky bottom-0 z-10">
+          <div className="p-4">
+            <ChatInput onSend={handleSend} disabled={inputDisabled} />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

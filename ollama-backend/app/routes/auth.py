@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from app.db import db
 from app.utils.jwt_handler import create_access_token
 from app.utils.password_handler import verify_password
+from app.settings import settings
 
 router = APIRouter()
 
@@ -11,13 +12,18 @@ class LoginRequest(BaseModel):
     password: str
 
 @router.post("/login")
-def login(req: LoginRequest):
-    user = db.users.find_one({"username": req.username})
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid username or password")
+async def login(request: LoginRequest):
+    username = request.username
+    password = request.password
 
-    if not verify_password(req.password, user["password"]):
-        raise HTTPException(status_code=401, detail="Invalid username or password")
-
-    token = create_access_token({"sub": req.username})
-    return {"token": token}
+    if username == settings.SUPERADMIN_USERNAME and password == settings.SUPERADMIN_PASSWORD:
+        return {"token": create_access_token(username, role="superadmin")}
+    
+    admin = db.admins.find_one({"username": username})
+    if not admin:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    if not verify_password(password, admin["password"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    return {"token": create_access_token(username, role="admin")}

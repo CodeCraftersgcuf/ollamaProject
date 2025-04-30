@@ -137,3 +137,57 @@ export const scrapeBlog = async ({
 }) => {
   return await apiCall(API_ENDPOINTS.BLOG.ScrapeAndSummarize, "POST", { url }, token);
 };
+
+
+// 🔥 Mutation: Create a new Admin
+export const createAdmin = async ({
+  username,
+  password,
+  token,
+}: {
+  username: string;
+  password: string;
+  token: string;
+}) => {
+  const formData = new FormData();
+  formData.append("username", username);
+  formData.append("password", password);
+
+  return await apiCall(API_ENDPOINTS.ADMINS.Create, "POST", formData, token);
+};
+
+// 🔥 Query: List all admins
+export const listAdmins = async (token: string) => {
+  return await apiCall(API_ENDPOINTS.ADMINS.List, "GET", undefined, token);
+};
+
+// 🔥 Mutation: Delete an Admin
+export const deleteAdmin = async ({
+  username,
+  token,
+}: {
+  username: string;
+  token: string;
+}) => {
+  const formData = new FormData();
+  formData.append("username", username);
+
+  return await apiCall(API_ENDPOINTS.ADMINS.Delete, "POST", formData, token);
+};
+
+// 🔥 Mutation: Update an Admin's Password
+export const updateAdminPassword = async ({
+  username,
+  password,
+  token,
+}: {
+  username: string;
+  password: string;
+  token: string;
+}) => {
+  const formData = new FormData();
+  formData.append("username", username);
+  formData.append("password", password);
+
+  return await apiCall(API_ENDPOINTS.ADMINS.UpdatePassword, "POST", formData, token);
+};

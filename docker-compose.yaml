@@ -1,0 +1,65 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: ./ollama-backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ollama-backend:/app
+      - ./ollama-backend/uploaded_files:/app/uploaded_files
+    environment:
+      - MONGO_URI=mongodb://root:samplepassword@mongo:27017/appdb?authSource=admin
+    depends_on:
+      - mongo
+    restart: always
+    networks:
+      - app-network
+
+  app:
+    build:
+      context: ./ollama-ui
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./ollama-ui:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - MONGO_URL=mongodb://root:samplepassword@mongo:27017/appdb?authSource=admin
+    command: npm run dev
+    depends_on:
+      - mongo
+    restart: always
+    networks:
+      - app-network
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo-db
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=appdb
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=samplepassword  # Use the sample password directly here
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mongo-data:
+
+networks:
+  app-network:
+    driver: bridge
