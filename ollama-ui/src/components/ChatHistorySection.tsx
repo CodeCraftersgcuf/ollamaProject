@@ -28,7 +28,8 @@ export default function ChatHistorySection({ selectedAdmin }: Props) {
     queryKey: ['userFiles', selectedAdmin],
     queryFn: async () => {
       if (!token) throw new Error('No token found!');
-      return await getUserFiles(token);
+      if (!selectedAdmin) return [];
+      return await getUserFiles(token, selectedAdmin); // ✅ Fixed: Pass selectedAdmin to API
     },
     enabled: !!selectedAdmin,
   });

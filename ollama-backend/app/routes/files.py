@@ -94,12 +94,19 @@ async def upload_file(
 @router.get("/list")
 def list_user_files(
     chat_id: str = None,
+    username: str = None,  # ✅ optional for superadmin
     user: dict = Depends(get_current_user)
 ):
     query = {}
 
     if user.get("role") != "superadmin":
         query["user"] = user["_id"]
+    elif username:
+        # ✅ Lookup the user's ObjectId by username
+        target_user = db.admins.find_one({"username": username})
+        if not target_user:
+            return []
+        query["user"] = target_user["_id"]
 
     if chat_id:
         query["chat_id"] = chat_id

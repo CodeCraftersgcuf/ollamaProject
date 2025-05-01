@@ -7,12 +7,16 @@ import { apiCall } from "./customApiCall";
 // export const fetchChatHistory = async (token: string) => {
 //   return await apiCall(API_ENDPOINTS.CHAT.GetHistory, "GET", undefined, token);
 // };
+export const fetchFiles = async (token: string, username?: string) => {
+  const url = username
+    ? `${API_ENDPOINTS.FILES.List}?username=${encodeURIComponent(username)}`
+    : API_ENDPOINTS.FILES.List;
 
-export const fetchFiles = async (token: string) => {
-  return await apiCall(API_ENDPOINTS.FILES.List, "GET", undefined, token);
+  return await apiCall(url, "GET", undefined, token);
 };
-export const getUserFiles = async (token: string) => {
-  return await apiCall(API_ENDPOINTS.FILES.List, "GET", undefined, token);
+export const getUserFiles = async (token: string, username: string) => {
+  const url = `${API_ENDPOINTS.FILES.List}?username=${encodeURIComponent(username)}`;
+  return await apiCall(url, "GET", undefined, token);
 };
 
 // 🔥 Query: Get summary history

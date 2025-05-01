@@ -77,10 +77,7 @@ export default function LoginPage() {
             </button>
           </div>
 
-          {/* Forgot Password */}
-          <div className="text-right text-sm text-green-600 cursor-pointer">
-            Forgot password?
-          </div>
+   
 
           {/* Error Message */}
           {error && <div className="text-red-500 text-sm">{error}</div>}
@@ -94,10 +91,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Signup */}
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Don't have an account? <span className="text-green-600 cursor-pointer">Sign up</span>
-        </p>
+     
       </div>
     </div>
   );

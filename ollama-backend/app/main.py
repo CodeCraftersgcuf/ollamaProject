@@ -6,7 +6,7 @@ from app.seed_admin import seed_admins  # ✅ correct import
 app = FastAPI()
 
 # Seed database on startup
-seed_admins()
+# seed_admins()
 
 # Allow frontend (adjust port if needed)
 origins = ["http://localhost:5173"]
