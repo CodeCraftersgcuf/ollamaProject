@@ -17,12 +17,12 @@ export default function App() {
   }, []);
 
   return (
-    <div className="flex h-screen bg-black text-white">
+    <div className="flex h-screen bg-[#111111] text-white">
       <Sidebar isOpen={sidebarOpen} selectedChat={selectedChat} onSelect={setSelectedChat} />
       
       <div className="flex-1 flex flex-col">
         {user?.role === 'superadmin' && (
-          <div className="p-2 bg-black border-b border-gray-700">
+          <div className="p-2 border-b border-gray-700">
             <button
               className="bg-black px-3 py-1 rounded-md hover:bg-gray-600"
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -31,7 +31,7 @@ export default function App() {
             </button>
           </div>
         )}
-        
+
         <ChatArea selectedChat={selectedChat} readOnly={selectedChat !== 'new-chat'} />
       </div>
     </div>

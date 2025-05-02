@@ -1,7 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { createAdmin, deleteAdmin, listAdmins, updateAdminPassword } from '../utils/mutation';
-import { getToken } from '../utils/getToken';
+import {
+  createAdmin,
+  deleteAdmin,
+  listAdmins,
+  updateAdminPassword,
+} from '../utils/mutation';
+import { getToken, getUserInfo } from '../utils/getToken';
 import AdminSidebar from '../components/AdminSidebar';
 import AdminCreateModal from '../components/AdminCreateModal';
 import AdminEditModal from '../components/AdminEditModal';
@@ -17,6 +23,15 @@ export default function AdminManagementPage() {
   const [selectedAdmin, setSelectedAdmin] = useState<string | null>(null);
 
   const token = getToken();
+  const navigate = useNavigate();
+  const user = getUserInfo();
+
+  // 🚫 Redirect if not superadmin
+  useEffect(() => {
+    if (!user || user.role !== 'superadmin') {
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   const { data: admins = [], refetch: refetchAdmins } = useQuery({
     queryKey: ['admins'],
@@ -52,7 +67,11 @@ export default function AdminManagementPage() {
   const { mutate: updatePasswordMutate, isPending: updatingPassword } = useMutation({
     mutationFn: async () => {
       if (!token) throw new Error('No token found!');
-      return await updateAdminPassword({ username: editUsername!, password: editPassword, token });
+      return await updateAdminPassword({
+        username: editUsername!,
+        password: editPassword,
+        token,
+      });
     },
     onSuccess: () => {
       setEditUsername(null);
@@ -84,7 +103,7 @@ export default function AdminManagementPage() {
           setShowEditModal(true);
         }}
         onDelete={(adminUsername) => deleteAdminMutate(adminUsername)}
-        onSelect={(username) => setSelectedAdmin(username)} // ✅ THIS LINE IS MISSING
+        onSelect={(username) => setSelectedAdmin(username)}
       />
 
       {/* Main Content */}
@@ -102,12 +121,9 @@ export default function AdminManagementPage() {
         {/* Chat History Section */}
         <div className="mt-10">
           <h2 className="text-2xl text-white mb-4">🧠 Recent Chat History</h2>
-
           <ChatHistorySection selectedAdmin={selectedAdmin} />
-
         </div>
       </div>
-
 
       {/* Modals */}
       {showCreateModal && (

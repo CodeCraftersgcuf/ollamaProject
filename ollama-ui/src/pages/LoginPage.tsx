@@ -45,7 +45,7 @@ export default function LoginPage() {
               htmlFor="email"
               className="absolute text-gray-500 text-sm left-4 top-2.5 peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 transition-all peer-focus:top-2.5 peer-focus:text-sm peer-focus:text-green-600"
             >
-              Email address
+              User Name
             </label>
           </div>
 

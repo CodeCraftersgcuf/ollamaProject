@@ -74,9 +74,9 @@ export default function Sidebar({ isOpen, selectedChat, onSelect }: SidebarProps
           )}
         </div>
 
-        <div className="text-xs text-gray-500 px-4 py-2 border-t border-[#2b2b2b]">
-          © 2025 HMS Tech
-        </div>
+        {/* <div className="text-xs text-gray-500 px-4 py-2 border-t border-[#2b2b2b]">
+          © 2025
+        </div> */}
       </div>
     </div>
   );
