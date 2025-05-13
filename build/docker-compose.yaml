@@ -1,0 +1,67 @@
+version: '3.9'
+
+services:
+  backend:
+    build: ./ollama-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ollama-backend:/app
+      - ./ollama-backend/uploaded_files:/app/uploaded_files
+    environment:
+      - MONGO_URI=mongodb://mongo:27017
+    depends_on:
+      - mongo
+    restart: always
+    networks:
+      - app-network
+
+  app:
+    build: ./ollama-ui
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./ollama-ui:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - MONGO_URL=mongodb://mongo:27017/appdb
+    command: npm run dev
+    depends_on:
+      - mongo
+    restart: always
+    networks:
+      - app-network
+
+  mongo:
+    image: mongo:7.0
+    container_name: mongo-db
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=appdb
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD_FILE=/run/secrets/mongo-password
+    secrets:
+      - mongo-password
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+volumes:
+  mongo-data:
+
+secrets:
+  mongo-password:
+    external: true
+
+networks:
+  app-network:
+    driver: bridge
