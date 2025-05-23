@@ -144,16 +144,21 @@ export const createAdmin = async ({
   username,
   password,
   token,
+  formData,
+  hasImage,
 }: {
-  username: string;
-  password: string;
+  username?: string;
+  password?: string;
   token: string;
+  formData?: FormData;
+  hasImage?: boolean;
 }) => {
-  const formData = new FormData();
-  formData.append("username", username);
-  formData.append("password", password);
-
-  return await apiCall(API_ENDPOINTS.ADMINS.Create, "POST", formData, token);
+  if (hasImage && formData) {
+    // If image is provided, use FormData
+    return await apiCall(API_ENDPOINTS.ADMINS.Create, "POST", formData, token);
+  }
+  // Default: no image, send as JSON
+  return await apiCall(API_ENDPOINTS.ADMINS.Create, "POST", { username, password }, token);
 };
 
 // 🔥 Query: List all admins

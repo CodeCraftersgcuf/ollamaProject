@@ -21,6 +21,7 @@ export default function AdminManagementPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedAdmin, setSelectedAdmin] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const token = getToken();
   const navigate = useNavigate();
@@ -42,13 +43,23 @@ export default function AdminManagementPage() {
   });
 
   const { mutate: createAdminMutate, isPending: creating } = useMutation({
-    mutationFn: async () => {
+    mutationFn: async ({ imageFile }: { imageFile?: File | null }) => {
       if (!token) throw new Error('No token found!');
+      // Prepare FormData for image upload
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append('username', username);
+        formData.append('password', password);
+        formData.append('image', imageFile);
+        // @ts-ignore
+        return await createAdmin({ formData, token, hasImage: true });
+      }
       return await createAdmin({ username, password, token });
     },
     onSuccess: () => {
       setUsername('');
       setPassword('');
+      setImageFile(null);
       setShowCreateModal(false);
       refetchAdmins();
     },
@@ -81,10 +92,11 @@ export default function AdminManagementPage() {
     },
   });
 
-  const handleCreateSubmit = (e: React.FormEvent) => {
+  const handleCreateSubmit = (e: React.FormEvent, imageFileParam?: File | null) => {
     e.preventDefault();
     if (!username || !password) return;
-    createAdminMutate();
+    setImageFile(imageFileParam || null);
+    createAdminMutate({ imageFile: imageFileParam });
   };
 
   const handleEditSubmit = (e: React.FormEvent) => {
@@ -107,9 +119,9 @@ export default function AdminManagementPage() {
       />
 
       {/* Main Content */}
-      <div className="flex-1 bg-[#212121] p-8 overflow-y-auto">
+      <div className="flex-1 bg-white p-8 overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl text-white font-bold">Admin Management</h1>
+          <h1 className="text-3xl text-black font-bold">Admin Management</h1>
           <button
             onClick={() => setShowCreateModal(true)}
             className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded text-white"
@@ -120,7 +132,7 @@ export default function AdminManagementPage() {
 
         {/* Chat History Section */}
         <div className="mt-10">
-          <h2 className="text-2xl text-white mb-4">🧠 Recent Chat History</h2>
+          <h2 className="text-2xl text-black mb-4">🧠 Recent Chat History</h2>
           <ChatHistorySection selectedAdmin={selectedAdmin} />
         </div>
       </div>

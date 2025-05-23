@@ -1,8 +1,7 @@
-// src/pages/LoginPage.tsx
-
 import { useState } from 'react';
 import { login } from '../utils/mutation';
-import { useNavigate } from 'react-router-dom'; // for redirection after login
+import { useNavigate } from 'react-router-dom';
+import logo from '../assets/logo.svg'; // ✅ Import logo
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -16,8 +15,8 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       const data = await login({ username: email, password });
-      localStorage.setItem('authToken', data.token); // Save token
-      navigate('/'); // After login, go to Home
+      localStorage.setItem('authToken', data.token);
+      navigate('/');
     } catch (err: any) {
       setError(err?.message || 'Login failed');
     }
@@ -26,10 +25,14 @@ export default function LoginPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white">
       <div className="w-full max-w-md p-8">
-        <h2 className="text-2xl font-semibold mb-8 text-center text-black">Login</h2>
+        {/* ✅ Add Logo */}
+        <div className="flex justify-center mb-6">
+          <img src={logo} alt="Logo" className="h-24" />
+        </div>
+
+        <h2 className="text-2xl font-semibold mb-6 text-center text-black">Login</h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-
           {/* Email Input */}
           <div className="relative">
             <input
@@ -38,7 +41,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className={`peer w-full border border-gray-300 rounded-md px-4 pt-5 pb-2 focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600`}
+              className="peer w-full text-black border border-gray-300 rounded-md px-4 pt-5 pb-2 focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600"
               placeholder=" "
             />
             <label
@@ -57,7 +60,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="peer w-full border border-gray-300 rounded-md px-4 pt-5 pb-2 focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600"
+              className="peer w-full text-black border border-gray-300 rounded-md px-4 pt-5 pb-2 focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600"
               placeholder=" "
             />
             <label
@@ -67,7 +70,6 @@ export default function LoginPage() {
               Password
             </label>
 
-            {/* Eye Button */}
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
@@ -76,8 +78,6 @@ export default function LoginPage() {
               {showPassword ? "🙈" : "👁️"}
             </button>
           </div>
-
-   
 
           {/* Error Message */}
           {error && <div className="text-red-500 text-sm">{error}</div>}
@@ -90,8 +90,6 @@ export default function LoginPage() {
             Continue
           </button>
         </form>
-
-     
       </div>
     </div>
   );

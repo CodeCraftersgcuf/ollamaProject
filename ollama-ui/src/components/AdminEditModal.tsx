@@ -16,22 +16,22 @@ type Props = {
     updating,
   }: Props) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-        <div className="bg-[#2f2f33] p-8 rounded-lg w-96">
-          <h2 className="text-xl text-white mb-4">Update Password for {username}</h2>
+      <div className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50">
+        <div className="bg-white p-8 rounded-lg w-96">
+          <h2 className="text-xl text-black mb-4">Update Password for {username}</h2>
           <form onSubmit={onSubmit} className="space-y-4">
             <input
               type="password"
               placeholder="New Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-2 rounded bg-[#40414f] text-white border border-[#565869] focus:outline-none"
+              className="w-full p-2 rounded bg-gray-100 text-black border border-gray-300 focus:outline-none"
             />
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={onCancel}
-                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded text-white"
+                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-black"
               >
                 Cancel
               </button>
@@ -48,4 +48,3 @@ type Props = {
       </div>
     );
   }
-  

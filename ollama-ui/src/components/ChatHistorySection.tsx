@@ -50,14 +50,14 @@ export default function ChatHistorySection({ selectedAdmin }: Props) {
     <div className="space-y-8">
       {/* Uploaded Files Section */}
       <div>
-        <h3 className="text-white text-lg font-bold mb-2">📂 Uploaded Files</h3>
+        <h3 className="text-black text-lg font-bold mb-2">📂 Uploaded Files</h3>
         {files.length === 0 ? (
-          <p className="text-gray-400">No files uploaded by {selectedAdmin}.</p>
+          <p className="text-gray-500">No files uploaded by {selectedAdmin}.</p>
         ) : (
-          <ul className="text-sm text-gray-300 space-y-1 list-disc list-inside">
+          <ul className="text-sm text-gray-700 space-y-1 list-disc list-inside">
             {files.map((file: any, index: number) => (
               <li key={index}>
-                <span className="text-white">{file.filename}</span>
+                <span className="text-black">{file.filename}</span>
                 <span className="text-gray-500 ml-2 text-xs">
                   (Uploaded: {new Date(file.uploaded_at).toLocaleString()})
                 </span>
@@ -69,12 +69,12 @@ export default function ChatHistorySection({ selectedAdmin }: Props) {
 
       {/* Chat History Section */}
       <div>
-        <h3 className="text-white text-lg font-bold mb-2">💬 Chat History</h3>
+        <h3 className="text-black text-lg font-bold mb-2">💬 Chat History</h3>
         {chats.length === 0 ? (
-          <p className="text-gray-400">No chat history found for {selectedAdmin}.</p>
+          <p className="text-gray-500">No chat history found for {selectedAdmin}.</p>
         ) : (
           chats.map((chat, index) => (
-            <div key={index} className="bg-[#2a2a2a] rounded-lg p-4 space-y-2">
+            <div key={index} className="bg-gray-100 rounded-lg p-4 space-y-2">
               <ChatMessage message={{ role: 'user', content: chat.question }} />
               <ChatMessage message={{ role: 'assistant', content: chat.answer }} />
             </div>

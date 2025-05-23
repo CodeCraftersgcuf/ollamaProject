@@ -24,8 +24,9 @@ type Props = {
 };
 
 export default function ChatArea({ selectedChat, readOnly }: Props) {
-  const [chatMap, setChatMap] = useState<Record<string, Message[]>>({});
+  const [chatMap, setChatMap] = useState<Record<string, Message>>({});
   const [inputDisabled, setInputDisabled] = useState(false);
+  const [replyPrefill, setReplyPrefill] = useState<string | undefined>(undefined);
   const token = getToken();
   const bottomRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -128,8 +129,8 @@ export default function ChatArea({ selectedChat, readOnly }: Props) {
 
   const handleSend = (text: string, file?: File | null) => {
     if (!selectedChat) return;
-
     setInputDisabled(true);
+    setReplyPrefill(undefined); // Clear prefill after send
 
     if (file) {
       setChatMap(prev => ({
@@ -180,30 +181,43 @@ export default function ChatArea({ selectedChat, readOnly }: Props) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  return (
-    <div className="flex-1 flex flex-col bg-[#212121]">
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 px-24">
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-white opacity-70">
-            <h2 className="text-2xl font-medium">What can I help with?</h2>
-          </div>
-        ) : (
-          <>
-            {messages.map((msg, idx) => (
-              <ChatMessage key={idx} message={msg} />
-            ))}
-            <div ref={bottomRef} />
-          </>
-        )}
-      </div>
-
-      {!readOnly && (
-        <div className="w-full bg-[#212121] border-t border-[#444654] sticky bottom-0 z-10">
-          <div className="p-4">
-            <ChatInput onSend={handleSend} disabled={inputDisabled} />
-          </div>
+return (
+  <div className="flex-1 flex flex-col h-screen bg-white">
+    {/* Message Area */}
+    <div className="flex-1 overflow-y-auto p-6 space-y-4 px-24">
+      {messages.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-full text-black opacity-70">
+          <h2 className="text-2xl font-medium">What can I help with?</h2>
         </div>
+      ) : (
+        <>
+          {messages.map((msg, idx) => (
+            <ChatMessage
+              key={idx}
+              message={msg}
+              onReply={
+                msg.role === 'assistant'
+                  ? (content) =>
+                      setReplyPrefill(`> ${content.replace(/\n/g, '\n> ')}\n\n`)
+                  : undefined
+              }
+            />
+          ))}
+          <div ref={bottomRef} />
+        </>
       )}
     </div>
-  );
+
+ {/* Input Bar */}
+{!readOnly && (
+  <div className="sticky bottom-0 z-10 w-full border-t border-gray-200 bg-white/80 backdrop-blur-md shadow-md">
+    <div className="px-4 py-3 max-w-4xl mx-auto">
+      <ChatInput onSend={handleSend} disabled={inputDisabled} prefill={replyPrefill} />
+    </div>
+  </div>
+)}
+
+  </div>
+);
+
 }
