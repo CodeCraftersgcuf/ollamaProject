@@ -26,11 +26,11 @@ export default function LoginPage() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-white">
       <div className="w-full max-w-md p-8">
         {/* ✅ Add Logo */}
-        <div className="flex justify-center mb-6">
-          <img src={logo} alt="Logo" className="h-24" />
+        <div className="flex justify-center">
+          <img src={logo} alt="Logo" className="h-72" />
         </div>
 
-        <h2 className="text-2xl font-semibold mb-6 text-center text-black">Login</h2>
+       
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Email Input */}

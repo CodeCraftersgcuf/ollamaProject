@@ -1,3 +1,5 @@
+import { FiEdit2, FiTrash2 } from 'react-icons/fi';
+
 type Props = {
   admins: any[];
   onEdit: (username: string) => void;
@@ -34,17 +36,17 @@ export default function AdminSidebar({ admins, onEdit, onDelete, onSelect }: Pro
               <div className="flex gap-2">
                 <button
                   onClick={() => onEdit(admin.username)}
-                  className="text-sm text-yellow-600 hover:text-yellow-500 transition"
+                  className="text-yellow-600 hover:text-yellow-500 transition me-4"
                   title="Edit admin"
                 >
-                  Edit
+                  <FiEdit2 size={18} />
                 </button>
                 <button
                   onClick={() => handleDelete(admin.username)}
-                  className="text-sm text-red-600 hover:text-red-500 transition"
+                  className="text-red-600 hover:text-red-500 transition"
                   title="Delete admin"
                 >
-                  Delete
+                  <FiTrash2 size={18} />
                 </button>
               </div>
             </li>

@@ -18,7 +18,8 @@ export default function ChatMessage({ message, onReply }: Props) {
 
 
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+    <div className={`flex items-center ${isUser ? 'justify-end' : 'justify-start'} gap-2`}>
+      {/* Message bubble */}
       <div className={`max-w-2xl px-4 py-3 rounded-lg text-black ${isUser ? 'bg-gray-100' : 'bg-gray-200'} relative`}>
         {/* Typing animation */}
         {isTypingPlaceholder ? (
@@ -34,18 +35,17 @@ export default function ChatMessage({ message, onReply }: Props) {
         ) : (
           <div className="whitespace-pre-wrap">{content}</div>
         )}
-
-        {/* Reply button for assistant messages */}
-        {!isUser && onReply && !isTypingPlaceholder && (
-          <button
-            className="absolute top-2 right-2 text-gray-400 hover:text-blue-600"
-            title="Reply"
-            onClick={() => onReply(content)}
-          >
-            <FiCornerUpLeft size={18} />
-          </button>
-        )}
       </div>
+      {/* Reply button for assistant messages, outside the bubble */}
+      {!isUser && onReply && !isTypingPlaceholder && (
+        <button
+          className="text-gray-400 hover:text-blue-600"
+          title="Reply"
+          onClick={() => onReply(content)}
+        >
+          <FiCornerUpLeft size={20} />
+        </button>
+      )}
     </div>
   );
 }

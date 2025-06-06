@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import App from './App';
 import LoginPage from './pages/LoginPage';
 import AdminManagementPage from './pages/AdminManagementPage'; // ✅ Import New Page
+import ApiKeyGenerationPage from './pages/ApiKeyGenerationPage'; // ✅ Import API Key Page
 import './index.css';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -18,6 +19,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/admin-management" element={<AdminManagementPage />} /> {/* ✅ New Route */}
+          <Route path="/api-key-generation" element={<ApiKeyGenerationPage />} /> {/* ✅ API Key Page */}
           <Route path="/*" element={<App />} />
         </Routes>
       </BrowserRouter>

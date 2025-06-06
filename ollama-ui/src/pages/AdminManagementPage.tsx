@@ -12,6 +12,7 @@ import AdminSidebar from '../components/AdminSidebar';
 import AdminCreateModal from '../components/AdminCreateModal';
 import AdminEditModal from '../components/AdminEditModal';
 import ChatHistorySection from '../components/ChatHistorySection';
+import { FiExternalLink } from 'react-icons/fi';
 
 export default function AdminManagementPage() {
   const [username, setUsername] = useState('');
@@ -120,14 +121,37 @@ export default function AdminManagementPage() {
 
       {/* Main Content */}
       <div className="flex-1 bg-white p-8 overflow-y-auto">
+        {/* Back to Home link */}
+        <div className="mb-2">
+          <button
+            onClick={() => navigate('/')}
+            className="text-green-700 hover:underline hover:text-green-900 font-medium transition"
+          >
+            ← Back to Home
+          </button>
+        </div>
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl text-black font-bold">Admin Management</h1>
+          <div>
           <button
             onClick={() => setShowCreateModal(true)}
             className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded text-white"
           >
             + Create Admin
           </button>
+          {/* API Key Generation Page Button */}
+ 
+            <a
+              href="/api-key-generation"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 px-3 py-1 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium border border-blue-100 transition"
+              title="Go to API Key Generation Page"
+            >
+              <FiExternalLink size={16} />
+              API Key Generation Page
+            </a>
+        </div>
         </div>
 
         {/* Chat History Section */}
